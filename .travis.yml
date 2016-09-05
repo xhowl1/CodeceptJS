@@ -23,4 +23,4 @@ before_script:
   - sleep 10
 
 script:
-  - node bin/codeceptjs run examples --verbose
+  - node bin/codecept.js run examples --verbose
