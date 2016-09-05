@@ -5,7 +5,7 @@
   "helpers": {
     "WebDriverIO": {
       "url": "http://localhost",
-      "browser": "chrome",
+      "browser": "firefox",
       "restart": true
     }
   },
