@@ -36,6 +36,7 @@
   },
   "dependencies": {
     "chalk": "^1.1.3",
+    "child-process-promise": "^2.2.1",
     "commander": "^2.14.1",
     "escape-string-regexp": "^1.0.3",
     "get-function-arguments": "^1.0.0",
