@@ -3,10 +3,11 @@ const path = require('path');
 const exec = require('child_process').exec;
 
 const runner = path.join(__dirname, '/../../bin/codecept.js');
+/* eslint-disable camelcase */
 const codecept_dir = path.join(__dirname, '/../data/sandbox');
 const codecept_run = `${runner} run`;
 const config_run_config = config => `${codecept_run} --config ${codecept_dir}/${config}`;
-const config_run_override = config => `${codecept_run} --override '${JSON.stringify(config)}'`;
+/* eslint-enable camelcase */
 
 describe('CodeceptJS Interface', () => {
   before(() => {
@@ -14,7 +15,7 @@ describe('CodeceptJS Interface', () => {
   });
 
   it('should rerun flaky tests', (done) => {
-    exec(config_run_config('codecept.flaky.json'), (err, stdout, stderr) => {
+    exec(config_run_config('codecept.flaky.json'), (err, stdout) => {
       stdout.should.include('Flaky'); // feature
       stdout.should.include('Not so flaky test'); // test name
       assert(!err);
@@ -23,7 +24,7 @@ describe('CodeceptJS Interface', () => {
   });
 
   it('should rerun retried steps', (done) => {
-    exec(config_run_config('codecept.retry.json'), (err, stdout, stderr) => {
+    exec(config_run_config('codecept.retry.json'), (err, stdout) => {
       stdout.should.include('Retry'); // feature
       stdout.should.include('Retries: 4'); // test name
       assert(!err);
@@ -33,7 +34,7 @@ describe('CodeceptJS Interface', () => {
 
 
   it('should include grep option tests', (done) => {
-    exec(config_run_config('codecept.grep.json'), (err, stdout, stderr) => {
+    exec(config_run_config('codecept.grep.json'), (err, stdout) => {
       stdout.should.include('Got login davert and password'); // feature
       stdout.should.not.include('Got changed login'); // test name
       assert(!err);
@@ -42,7 +43,7 @@ describe('CodeceptJS Interface', () => {
   });
 
   it('should run tests with different data', (done) => {
-    exec(config_run_config('codecept.ddt.json'), (err, stdout, stderr) => {
+    exec(config_run_config('codecept.ddt.json'), (err, stdout) => {
       const output = stdout.replace(/in [0-9]ms/g, '').replace(/\r/g, '');
       output.should.include(`Got login davert and password 123456
  ✓ Should log accounts1 | {"login":"davert","password":"123456"}`);
@@ -68,7 +69,8 @@ describe('CodeceptJS Interface', () => {
   });
 
   it('should execute expected promise chain', (done) => {
-    exec(`${codecept_run} --verbose`, (err, stdout, stderr) => {
+    // eslint-disable-next-line camelcase
+    exec(`${codecept_run} --verbose`, (err, stdout) => {
       const queue1 = stdout.match(/\[1\] .+/g);
       queue1.should.eql([
         '[1] Starting recording promises',

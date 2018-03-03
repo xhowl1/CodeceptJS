@@ -29,19 +29,22 @@ const newEventHandler = (name) => {
     eventRecorder.push(name);
     eventTypeCounter[name] = (eventTypeCounter[name] || 0) + 1;
     if (options.logToConsole) {
+      // eslint-disable-next-line no-console
       console.log(`Event:${name}`);
     }
   });
 };
 
-eventTypes.forEach(name => newEventHandler(name));
 
 module.exports = {
+  init: () => eventTypes.forEach(name => newEventHandler(name)),
   events: eventRecorder,
   counter: eventTypeCounter,
   clearEvents: () => {
     eventRecorder = [];
     eventTypeCounter = {};
   },
-  setConsoleLogging: on => options.logToConsole = !!on,
+  setConsoleLogging: (on) => {
+    options.logToConsole = !!on;
+  },
 };

@@ -1,6 +1,8 @@
 const TestHelper = require('../support/TestHelper');
 const eventHandlers = require('../data/sandbox/eventHandlers');
 
+eventHandlers.init();
+
 module.exports.config = {
   tests: './*_test.js',
   timeout: 10000,

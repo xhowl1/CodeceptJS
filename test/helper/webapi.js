@@ -1,3 +1,6 @@
+/* global document */
+/* eslint-disable no-underscore-dangle */
+
 require('co-mocha')(require('mocha'));
 
 let I;
@@ -147,7 +150,9 @@ module.exports.tests = function () {
       let err = false;
       yield I.amOnPage('/');
       return I.click('More info', '#area1')
-        .catch(e => err = true)
+        .catch(() => {
+          err = true;
+        })
         .then(() => assert.ok(err));
     });
 
@@ -554,7 +559,9 @@ module.exports.tests = function () {
       return I.amOnPage('/dynamic')
         .then(() => I.dontSee('Dynamic text'))
         .then(() => I.waitForText('Dynamic text', 1, '#fext'))
-        .catch(err => failed = true)
+        .catch(() => {
+          failed = true;
+        })
         .then(() => assert.ok(failed));
     });
 
@@ -562,7 +569,9 @@ module.exports.tests = function () {
       let failed = false;
       return I.amOnPage('/dynamic')
         .then(() => I.waitForText('Other text', 1))
-        .catch(err => failed = true)
+        .catch(() => {
+          failed = true;
+        })
         .then(() => assert.ok(failed));
     });
 
@@ -570,7 +579,9 @@ module.exports.tests = function () {
       let failed = false;
       return I.amOnPage('/dynamic')
         .then(() => I.waitForText('Other text', 1, '#text'))
-        .catch(err => failed = true)
+        .catch(() => {
+          failed = true;
+        })
         .then(() => assert.ok(failed));
     });
 
@@ -698,7 +709,9 @@ module.exports.tests = function () {
         .then(() => I.see('E-Mail'))
         .then(() => I.dontSee('Hasło'))
         .then(() => I.dontSeeElement('#navbar-collapse-menu'))
-        .catch(err => rethrow = err)
+        .catch((err) => {
+          rethrow = err;
+        })
         .then(() => I.dontSeeCheckboxIsChecked('terms'))
         .catch((err) => {
           if (!err) assert.fail('seen checkbox');

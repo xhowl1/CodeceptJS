@@ -30,10 +30,10 @@ describe('Scenario', () => {
   it('should work with generator func', () => {
     let counter = 0;
     test.fn = function* () {
-      yield counter++;
-      yield counter++;
-      yield counter++;
-      counter++;
+      yield counter += 1;
+      yield counter += 1;
+      yield counter += 1;
+      counter += 1;
     };
     scenario.setup();
     scenario.test(test).fn(() => null);
@@ -43,13 +43,15 @@ describe('Scenario', () => {
 
   it('should work with async func', () => {
     let counter = 0;
-    let error;
+    const incrementCounterByOne = async () => {
+      counter += 1;
+    };
     test.fn = () => {
       recorder.add('test', async () => {
-        await counter++;
-        await counter++;
-        await counter++;
-        counter++;
+        await incrementCounterByOne();
+        await incrementCounterByOne();
+        await incrementCounterByOne();
+        counter += 1;
       });
     };
 

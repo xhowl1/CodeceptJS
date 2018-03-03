@@ -1,3 +1,5 @@
+/* eslint-disable camelCase: ["error", { "codecept_dir": true }] */
+
 const expect = require('chai').expect;
 const assert = require('assert');
 const path = require('path');
@@ -6,10 +8,15 @@ const event = require('../../lib').event;
 const eventHandlers = require('../data/sandbox/eventHandlers');
 
 const runner = path.join(__dirname, '/../../bin/codecept.js');
+
+/* eslint-disable camelcase */
 const codecept_dir = path.join(__dirname, '/../data/sandbox');
 const codecept_run = `${runner} run`;
 const codecept_run_config = config => `${codecept_run} --config ${codecept_dir}/${config}`;
 const config_run_override = config => `${codecept_run} --config ${codecept_dir} --override '${JSON.stringify(config)}'`;
+/* eslint-enable camelcase */
+
+eventHandlers.init();
 
 describe('CodeceptJS Runner', () => {
   before(() => {
@@ -18,7 +25,7 @@ describe('CodeceptJS Runner', () => {
 
   it('should be executed in current dir', (done) => {
     process.chdir(codecept_dir);
-    exec(codecept_run, (err, stdout, stderr) => {
+    exec(codecept_run, (err, stdout) => {
       stdout.should.include('Filesystem'); // feature
       stdout.should.include('check current dir'); // test name
       assert(!err);
@@ -28,7 +35,8 @@ describe('CodeceptJS Runner', () => {
 
 
   it('should be executed with config path', (done) => {
-    exec(`${codecept_run} -c ${codecept_dir}`, (err, stdout, stderr) => {
+    // eslint-disable-next-line camelcase
+    exec(`${codecept_run} -c ${codecept_dir}`, (err, stdout) => {
       stdout.should.include('Filesystem'); // feature
       stdout.should.include('check current dir'); // test name
       assert(!err);
@@ -37,7 +45,7 @@ describe('CodeceptJS Runner', () => {
   });
 
   it('should show failures and exit with 1 on fail', (done) => {
-    exec(codecept_run_config('codecept.failed.json'), (err, stdout, stderr) => {
+    exec(codecept_run_config('codecept.failed.json'), (err, stdout) => {
       stdout.should.include('Not-A-Filesystem');
       stdout.should.include('file is not in dir');
       stdout.should.include('FAILURES');
@@ -47,7 +55,7 @@ describe('CodeceptJS Runner', () => {
   });
 
   it('should run bootstrap', (done) => {
-    exec(codecept_run_config('codecept.bootstrap.sync.json'), (err, stdout, stderr) => {
+    exec(codecept_run_config('codecept.bootstrap.sync.json'), (err, stdout) => {
       stdout.should.include('Filesystem'); // feature
       stdout.should.include('I am bootstrap');
       assert(!err);
@@ -56,7 +64,7 @@ describe('CodeceptJS Runner', () => {
   });
 
   it('should run teardown', (done) => {
-    exec(config_run_override({ teardown: 'bootstrap.sync.js' }), (err, stdout, stderr) => {
+    exec(config_run_override({ teardown: 'bootstrap.sync.js' }), (err, stdout) => {
       stdout.should.include('Filesystem'); // feature
       stdout.should.include('I am bootstrap');
       assert(!err);
@@ -65,7 +73,7 @@ describe('CodeceptJS Runner', () => {
   });
 
   it('should run async bootstrap', (done) => {
-    exec(config_run_override({ bootstrap: 'bootstrap.async.js' }), (err, stdout, stderr) => {
+    exec(config_run_override({ bootstrap: 'bootstrap.async.js' }), (err, stdout) => {
       stdout.should.include('Ready: 0');
       stdout.should.include('Go: 1');
       stdout.should.include('Filesystem'); // feature
@@ -75,7 +83,7 @@ describe('CodeceptJS Runner', () => {
   });
 
   it('should run hooks', (done) => {
-    exec(codecept_run_config('codecept.hooks.js'), (err, stdout, stderr) => {
+    exec(codecept_run_config('codecept.hooks.js'), (err, stdout) => {
       stdout.should.include('Filesystem'); // feature
       stdout.should.include('I am bootstrap');
       stdout.should.include('I am function hook');
@@ -149,7 +157,7 @@ describe('CodeceptJS Runner', () => {
   });
 
   it('should run bootstrap/teardown as object', (done) => {
-    exec(codecept_run_config('codecept.bootstrap.obj.json'), (err, stdout, stderr) => {
+    exec(codecept_run_config('codecept.bootstrap.obj.json'), (err, stdout) => {
       stdout.should.include('Filesystem'); // feature
       stdout.should.include('I am bootstrap');
       stdout.should.include('I am teardown');
@@ -159,7 +167,7 @@ describe('CodeceptJS Runner', () => {
   });
 
   it('should run dynamic config', (done) => {
-    exec(codecept_run_config('config.js'), (err, stdout, stderr) => {
+    exec(codecept_run_config('config.js'), (err, stdout) => {
       stdout.should.include('Filesystem'); // feature
       assert(!err);
       done();
@@ -167,7 +175,7 @@ describe('CodeceptJS Runner', () => {
   });
 
   it('should run dynamic config with profile', (done) => {
-    exec(`${codecept_run_config('config.js')} --profile failed`, (err, stdout, stderr) => {
+    exec(`${codecept_run_config('config.js')} --profile failed`, (err, stdout) => {
       stdout.should.include('FAILURES');
       stdout.should.not.include('I am bootstrap');
       assert(err.code);
@@ -176,7 +184,7 @@ describe('CodeceptJS Runner', () => {
   });
 
   it('should run dynamic config with profile 2', (done) => {
-    exec(`${codecept_run_config('config.js')} --profile bootstrap`, (err, stdout, stderr) => {
+    exec(`${codecept_run_config('config.js')} --profile bootstrap`, (err, stdout) => {
       stdout.should.not.include('FAILURES'); // feature
       stdout.should.include('I am bootstrap');
       assert(!err);

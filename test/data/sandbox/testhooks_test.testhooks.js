@@ -1,3 +1,6 @@
+/* global Feature BeforeSuite Before Scenario After AfterSuite */
+/* eslint-disable no-console */
+
 Feature('Test hooks');
 
 BeforeSuite(() => {

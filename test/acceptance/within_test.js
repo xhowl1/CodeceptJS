@@ -1,3 +1,5 @@
+/* global Feature Scenario within */
+
 Feature('within', { retries: 3 });
 
 Scenario('within on form @WebDriverIO @Protractor @Nightmare @Puppeteer', (I) => {

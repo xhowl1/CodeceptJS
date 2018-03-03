@@ -1,3 +1,5 @@
+/* eslint-disable no-console, class-methods-use-this */
+
 const Helper = require('../../lib/helper');
 
 class MyHelper extends Helper {
