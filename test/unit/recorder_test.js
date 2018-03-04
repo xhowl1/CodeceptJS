@@ -17,14 +17,22 @@ describe('Recorder', () => {
   describe('#session', () => {
     it('can be started saving previous promise chain', () => {
       let order = '';
-      recorder.add(() => order += 'a');
+      recorder.add(() => {
+        order += 'a';
+      });
       recorder.add(() => {
         recorder.session.start();
-        recorder.add(() => order += 'c');
-        recorder.add(() => order += 'd');
+        recorder.add(() => {
+          order += 'c';
+        });
+        recorder.add(() => {
+          order += 'd';
+        });
       });
       recorder.add(() => recorder.session.restore());
-      recorder.add(() => order += 'b');
+      recorder.add(() => {
+        order += 'b';
+      });
       return recorder.promise()
         .then(() => assert.equal(order, 'acdb'));
     });
@@ -33,17 +41,25 @@ describe('Recorder', () => {
   describe('#add', () => {
     it('should add steps to promise', () => {
       let counter = 0;
-      recorder.add(() => counter += 1);
-      recorder.add(() => counter += 1);
+      recorder.add(() => {
+        counter += 1;
+      });
+      recorder.add(() => {
+        counter += 1;
+      });
       recorder.add(() => counter.should.eql(2));
       return recorder.promise();
     });
 
     it('should not add steps when stopped', () => {
       let counter = 0;
-      recorder.add(() => counter += 1);
+      recorder.add(() => {
+        counter += 1;
+      });
       recorder.stop();
-      recorder.add(() => counter += 1);
+      recorder.add(() => {
+        counter += 1;
+      });
       return recorder.promise()
         .then(() => counter.should.eql(1));
     });
@@ -54,7 +70,7 @@ describe('Recorder', () => {
       let counter = 0;
       recorder.retry(2);
       recorder.add(() => {
-        counter++;
+        counter += 1;
         if (counter < 3) {
           throw new Error('ups');
         }
@@ -69,7 +85,7 @@ describe('Recorder', () => {
       recorder.retry({ retries: 2, when: err => err.message === 'othererror' });
 
       recorder.add(() => {
-        counter++;
+        counter += 1;
         if (counter < 3) {
           throw new Error(errorText);
         }

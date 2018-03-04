@@ -8,9 +8,11 @@ describe('utils', () => {
   });
 
   describe('#getParamNames', () => {
+    /* eslint-disable no-unused-vars */
     it('fn#1', () => utils.getParamNames((a, b) => {}).should.eql(['a', 'b']));
     it('fn#2', () => utils.getParamNames((I, userPage) => { }).should.eql(['I', 'userPage']));
     it('should handle single-param arrow functions with omitted parens', () => utils.getParamNames((I) => {}).should.eql(['I']));
+    /* eslint-enable no-unused-vars */
   });
 
   describe('#methodsOfObject', () => {
