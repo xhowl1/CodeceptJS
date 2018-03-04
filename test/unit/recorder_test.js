@@ -65,8 +65,8 @@ describe('Recorder', () => {
     it('should create a chain of retries', () => {
       let counter = 0;
       const errorText = 'noerror';
-      recorder.retry({ retries: 2, when: (err) => { return err.message === errorText; } });
-      recorder.retry({ retries: 2, when: (err) => { return err.message === 'othererror'; } });
+      recorder.retry({ retries: 2, when: err => err.message === errorText });
+      recorder.retry({ retries: 2, when: err => err.message === 'othererror' });
 
       recorder.add(() => {
         counter++;

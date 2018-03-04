@@ -46,9 +46,7 @@ describe('Puppeteer', function () {
     });
   });
 
-  afterEach(() => {
-    return I._after();
-  });
+  afterEach(() => I._after());
 
   describe('open page : #amOnPage', () => {
     it('should open main page of configured site', async () => {
@@ -72,21 +70,17 @@ describe('Puppeteer', function () {
   webApiTests.tests();
 
   describe('#waitToHide', () => {
-    it('should wait for hidden element', () => {
-      return I.amOnPage('/form/wait_invisible')
-        .then(() => I.see('Step One Button'))
-        .then(() => I.waitToHide('#step_1', 2))
-        .then(() => I.dontSeeElement('#step_1'))
-        .then(() => I.dontSee('Step One Button'));
-    });
+    it('should wait for hidden element', () => I.amOnPage('/form/wait_invisible')
+      .then(() => I.see('Step One Button'))
+      .then(() => I.waitToHide('#step_1', 2))
+      .then(() => I.dontSeeElement('#step_1'))
+      .then(() => I.dontSee('Step One Button')));
 
-    it('should wait for hidden element by XPath', () => {
-      return I.amOnPage('/form/wait_invisible')
-        .then(() => I.see('Step One Button'))
-        .then(() => I.waitToHide('//div[@id="step_1"]', 2))
-        .then(() => I.dontSeeElement('//div[@id="step_1"]'))
-        .then(() => I.dontSee('Step One Button'));
-    });
+    it('should wait for hidden element by XPath', () => I.amOnPage('/form/wait_invisible')
+      .then(() => I.see('Step One Button'))
+      .then(() => I.waitToHide('//div[@id="step_1"]', 2))
+      .then(() => I.dontSeeElement('//div[@id="step_1"]'))
+      .then(() => I.dontSee('Step One Button')));
   });
 
   describe('#waitNumberOfVisibleElements', () => {
