@@ -1,6 +1,7 @@
 const eventHandlers = require('./eventHandlers');
 require('../fake_driver');
 
+eventHandlers.init();
 eventHandlers.setConsoleLogging(true);
 
 module.exports.config = {

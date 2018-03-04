@@ -3,6 +3,8 @@ const assert = require('assert');
 const expect = require('chai').expect;
 const eventHandlers = require('../data/sandbox/eventHandlers');
 
+eventHandlers.init();
+
 const expectedEvents = [];
 
 Feature('Events', { retries: 0 });
