@@ -1,3 +1,5 @@
+/* global Feature BeforeSuite Before Scenario After AfterSuite */
+
 const event = require('../../lib').event;
 const assert = require('assert');
 const expect = require('chai').expect;
@@ -9,7 +11,7 @@ const expectedEvents = [];
 
 Feature('Events', { retries: 0 });
 
-BeforeSuite((I) => {
+BeforeSuite(() => {
   expectedEvents.push(...[
     event.all.before,
     event.suite.before,
@@ -17,14 +19,14 @@ BeforeSuite((I) => {
   expect(eventHandlers.events).to.deep.equal(expectedEvents);
 });
 
-Before((I) => {
+Before(() => {
   expectedEvents.push(...[
     event.test.before,
   ]);
   expect(eventHandlers.events).to.deep.equal(expectedEvents);
 });
 
-After((I) => {
+After(() => {
   expectedEvents.push(...[
     event.test.passed,
     // event.test.after, // Does not fire until after After()
@@ -47,7 +49,7 @@ AfterSuite(() => {
   });
 });
 
-Scenario('Event Hooks @WebDriverIO @Protractor @Nightmare @Puppeteer', (I) => {
+Scenario('Event Hooks @WebDriverIO @Protractor @Nightmare @Puppeteer', () => {
   expectedEvents.push(...[
     event.test.started,
   ]);

@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 const assert = require('assert');
 const chai = require('chai');
 
@@ -38,6 +40,7 @@ describe('Output', () => {
   it('should allow debug messages when output level >= 2', () => {
     const debugMsg = 'Dear Henrietta';
 
+    /* eslint-disable no-unused-expressions */
     output.level(0);
     output.debug(debugMsg);
     expect(console.log).not.to.be.called;
@@ -53,6 +56,7 @@ describe('Output', () => {
     output.level(3);
     output.debug(debugMsg);
     expect(console.log).to.have.been.calledTwice;
+    /* eslint-enable no-unused-expressions */
   });
 
   afterEach(() => {
