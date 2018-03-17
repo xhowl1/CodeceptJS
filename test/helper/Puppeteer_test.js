@@ -296,17 +296,6 @@ describe('Puppeteer', function () {
       }));
   });
 
-  describe('#seeTextEquals', () => {
-    it('should check text is equal to provided one', () => I.amOnPage('/')
-      .then(() => I.seeTextEquals('Welcome to test app!', 'h1'))
-      .then(() => I.seeTextEquals('Welcome to test app', 'h1'))
-      .then(() => assert.equal(true, false, 'Throw an error because it should not get this far!'))
-      .catch((e) => {
-        e.should.be.instanceOf(Error);
-        e.message.should.be.equal('expected element h1 "Welcome to test app" to equal "Welcome to test app!"');
-      }));
-  });
-
   describe('#_locateClickable', () => {
     it('should locate a button to click', () => I.amOnPage('/form/checkbox')
       .then(() => I._locateClickable('Submit'))

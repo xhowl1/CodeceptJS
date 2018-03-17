@@ -165,18 +165,6 @@ describe('WebDriverIO', function () {
       }));
   });
 
-  describe('#seeTextEquals', () => {
-    it('should check text is equal to provided one', () => wd.amOnPage('/')
-      .then(() => wd.seeTextEquals('Welcome to test app!', 'h1'))
-      .then(() => wd.seeTextEquals('Welcome to test app', 'h1'))
-      .then(() => assert.equal(true, false, 'Throw an error because it should not get this far!'))
-      .catch((e) => {
-        e.should.be.instanceOf(Error);
-        e.message.should.be.equal('expected element h1 "Welcome to test app" to equal "Welcome to test app!"');
-        // e.should.be.instanceOf(AssertionFailedError);
-        // e.inspect().should.include("expected element h1 'Welcome to test app' to equal 'Welcome to test app!'");
-      }));
-  });
 
   describe('#waitForEnabled', () => {
     it('should wait for input text field to be enabled', () => wd.amOnPage('/form/wait_enabled')

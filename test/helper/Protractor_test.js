@@ -354,9 +354,12 @@ describe('Protractor', function () {
     it('should check text is equal to provided one', () => I.amOnPage('/')
       .then(() => I.seeTextEquals('Create Event', 'h1'))
       .then(() => I.seeTextEquals('Create Even', 'h1'))
+      .then(() => {
+        throw Error('It should not get this far');
+      })
       .catch((e) => {
         e.should.be.instanceOf(AssertionFailedError);
-        e.inspect().should.include("expected element h1 'Create Event' to equal 'Create Even'");
+        e.inspect().should.include('expected element h1 "Create Even" to equal "Create Event"');
       }));
   });
 
