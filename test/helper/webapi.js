@@ -163,6 +163,21 @@ module.exports.tests = function () {
       .then(source => assert.notEqual(source.indexOf('<title>TestEd Beta 2.0</title>'), -1, 'Source html should be retrieved')));
   });
 
+
+  describe('#grabHTMLFrom', () => {
+    it('should grab inner html from an element using xpath query', () => I.amOnPage('/')
+      .then(() => I.grabHTMLFrom('//title'))
+      .then(html => assert.equal(html, 'TestEd Beta 2.0')));
+
+    it('should grab inner html from an element using id query', () => I.amOnPage('/')
+      .then(() => I.grabHTMLFrom('#area1'))
+      .then(html => assert.equal(html.trim(), '<a href="/form/file" qa-id="test" qa-link="test"> Test Link </a>')));
+
+    it('should grab inner html from multiple elements', () => I.amOnPage('/')
+      .then(() => I.grabHTMLFrom('//a'))
+      .then(html => assert.equal(html.length, 5)));
+  });
+
   describe('#click', () => {
     it('should click by inner text', function* () {
       yield I.amOnPage('/');
