@@ -501,7 +501,7 @@ module.exports.tests = function () {
     });
   });
 
-  describe('page title : #seeTitle, #dontSeeTitle, #grabTitle', () => {
+  describe('page title : #seeTitle, #dontSeeTitle, #grabTitle, #seeTitleEquals', () => {
     it('should check page title', function* () {
       yield I.amOnPage('/');
       yield I.seeInTitle('TestEd Beta 2.0');
@@ -515,6 +515,15 @@ module.exports.tests = function () {
       const val = yield I.grabTitle();
       return assert.equal(val, 'TestEd Beta 2.0');
     });
+
+    it('should check that title is equal to provided one', () => I.amOnPage('/')
+      .then(() => I.seeTitleEquals('TestEd Beta 2.0'))
+      .then(() => I.seeTitleEquals('TestEd Beta 2.'))
+      .then(() => assert.equal(true, false, 'Throw an error because it should not get this far!'))
+      .catch((e) => {
+        e.should.be.instanceOf(Error);
+        e.message.should.be.equal('expected web page title "TestEd Beta 2.0" to equal "TestEd Beta 2."');
+      }));
   });
 
   describe('#seeTextEquals', () => {

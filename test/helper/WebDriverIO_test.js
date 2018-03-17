@@ -155,17 +155,6 @@ describe('WebDriverIO', function () {
       .then(source => assert.notEqual(source.indexOf('<title>TestEd Beta 2.0</title>'), -1, 'Source html should be retrieved')));
   });
 
-
-  describe('#seeTitleEquals', () => {
-    it('should check that title is equal to provided one', () => wd.amOnPage('/')
-      .then(() => wd.seeTitleEquals('TestEd Beta 2.0'))
-      .then(() => wd.seeTitleEquals('TestEd Beta 2.'))
-      .catch((e) => {
-        assert.equal(e.message, 'expected web page title to be TestEd Beta 2., but found TestEd Beta 2.0');
-      }));
-  });
-
-
   describe('#waitForEnabled', () => {
     it('should wait for input text field to be enabled', () => wd.amOnPage('/form/wait_enabled')
       .then(() => wd.waitForEnabled('#text', 2))
