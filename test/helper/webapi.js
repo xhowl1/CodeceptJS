@@ -893,7 +893,6 @@ module.exports.tests = function () {
 
   describe('#grabCssPropertyFrom', () => {
     it('should grab css property for given element', async () => {
-      if (isHelper('Nightmare')) return;
       await I.amOnPage('/form/doubleclick');
       const css = await I.grabCssPropertyFrom('#block', 'height');
       assert.equal(css, '100px');
@@ -902,7 +901,6 @@ module.exports.tests = function () {
 
   describe('#seeAttributesOnElements', () => {
     it('should check attributes values for given element', async () => {
-      if (isHelper('Nightmare')) return;
       try {
         await I.amOnPage('/info');
         await I.seeAttributesOnElements('//form', {
@@ -922,7 +920,6 @@ module.exports.tests = function () {
     });
 
     it('should check attributes values for several elements', async () => {
-      if (isHelper('Nightmare')) return;
       try {
         await I.amOnPage('/');
         await I.seeAttributesOnElements('a', {
@@ -945,7 +942,6 @@ module.exports.tests = function () {
 
   describe('#seeCssPropertiesOnElements', () => {
     it('should check css property for given element', async () => {
-      if (isHelper('Nightmare')) return;
       try {
         await I.amOnPage('/info');
         await I.seeCssPropertiesOnElements('h3', {
@@ -966,7 +962,6 @@ module.exports.tests = function () {
 
 
     it('should check css property for several elements', async () => {
-      if (isHelper('Nightmare')) return;
       try {
         await I.amOnPage('/');
         await I.seeCssPropertiesOnElements('a', {
@@ -991,8 +986,6 @@ module.exports.tests = function () {
     });
 
     it('should normalize css color properties for given element', async () => {
-      if (isHelper('Nightmare')) return;
-
       await I.amOnPage('/form/css_colors');
       await I.seeCssPropertiesOnElements('#namedColor', {
         'background-color': 'purple',
