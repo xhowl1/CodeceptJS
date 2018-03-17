@@ -145,7 +145,7 @@ module.exports.tests = function () {
       .then(num => assert.equal(num, 3)));
   });
 
-  describe('#seeInSource, #dontSeeInSource', () => {
+  describe('#seeInSource, #dontSeeInSource, #grabSource', () => {
     it('should check meta of a page', function* () {
       yield I.amOnPage('/info');
       yield I.seeInSource('<body>');
@@ -153,6 +153,14 @@ module.exports.tests = function () {
       yield I.seeInSource('Invisible text');
       return I.seeInSource('content="text/html; charset=utf-8"');
     });
+
+    it('should check for text to be in HTML source', () => I.amOnPage('/')
+      .then(() => I.seeInSource('<title>TestEd Beta 2.0</title>'))
+      .then(() => I.dontSeeInSource('<meta')));
+
+    it('should grab the source', () => I.amOnPage('/')
+      .then(() => I.grabSource())
+      .then(source => assert.notEqual(source.indexOf('<title>TestEd Beta 2.0</title>'), -1, 'Source html should be retrieved')));
   });
 
   describe('#click', () => {
