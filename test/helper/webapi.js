@@ -1067,4 +1067,50 @@ module.exports.tests = function () {
       .then(() => I.click('#button'))
       .then(() => I.see('button was clicked')));
   });
+
+  describe('#waitForValue', () => {
+    it('should wait for expected value for given locator', async () => {
+      if (isHelper('Nightmare')) return;
+      try {
+        await I.amOnPage('/info');
+        await I.waitForValue('//input[@name= "rus"]', 'Верно');
+        await I.waitForValue('//input[@name= "rus"]', 'Верно3', 0.1);
+        throw Error('It should never get this far');
+      } catch (e) {
+        e.message.should.include('element (//input[@name= "rus"]) is not in DOM or there is no element(//input[@name= "rus"]) with value "Верно3" after 0.1 sec');
+      }
+    });
+
+    it('should wait for expected value for given css locator', async () => {
+      if (isHelper('Nightmare')) return;
+      await I.amOnPage('/form/wait_value');
+      await I.seeInField('#text', 'Hamburg');
+      await I.waitForValue('#text', 'Brisbane', 2.5);
+      await I.seeInField('#text', 'Brisbane');
+    });
+
+    it('should wait for expected value for given xpath locator', async () => {
+      if (isHelper('Nightmare')) return;
+      await I.amOnPage('/form/wait_value');
+      await I.seeInField('#text', 'Hamburg');
+      await I.waitForValue('//input[@value = "Grüße aus Hamburg"]', 'Brisbane', 2.5);
+      await I.seeInField('#text', 'Brisbane');
+    });
+
+    it('should only wait for one of the matching elements to contain the value given xpath locator', async () => {
+      if (isHelper('Nightmare')) return;
+      await I.amOnPage('/form/wait_value');
+      await I.waitForValue('//input[@type = "text"]', 'Brisbane', 4);
+      await I.seeInField('#text', 'Brisbane');
+      await I.seeInField('#text2', 'London');
+    });
+
+    it('should only wait for one of the matching elements to contain the value given css locator', async () => {
+      if (isHelper('Nightmare')) return;
+      await I.amOnPage('/form/wait_value');
+      await I.waitForValue('.inputbox', 'Brisbane', 4);
+      await I.seeInField('#text', 'Brisbane');
+      await I.seeInField('#text2', 'London');
+    });
+  });
 };
