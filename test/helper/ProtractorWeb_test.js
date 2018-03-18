@@ -211,23 +211,6 @@ describe('Protractor-NonAngular', function () {
       .then(() => I.see('World')));
   });
 
-  describe('#waitForEnabled', () => {
-    it('should wait for input text field to be enabled', () => I.amOnPage('/form/wait_enabled')
-      .then(() => I.waitForEnabled('#text', 2))
-      .then(() => I.fillField('#text', 'hello world'))
-      .then(() => I.seeInField('#text', 'hello world')));
-
-    it('should wait for input text field to be enabled by xpath', () => I.amOnPage('/form/wait_enabled')
-      .then(() => I.waitForEnabled("//*[@name = 'test']", 2))
-      .then(() => I.fillField('#text', 'hello world'))
-      .then(() => I.seeInField('#text', 'hello world')));
-
-    it('should wait for a button to be enabled', () => I.amOnPage('/form/wait_enabled')
-      .then(() => I.waitForEnabled('#text', 2))
-      .then(() => I.click('#button'))
-      .then(() => I.see('button was clicked')));
-  });
-
   describe('#waitForValue', () => {
     it('should wait for expected value for given locator', () => I.amOnPage('/info')
       .then(() => I.waitForValue('//input[@name= "rus"]', 'Верно'))

@@ -145,24 +145,6 @@ describe('WebDriverIO', function () {
     });
   });
 
-  describe('#waitForEnabled', () => {
-    it('should wait for input text field to be enabled', () => wd.amOnPage('/form/wait_enabled')
-      .then(() => wd.waitForEnabled('#text', 2))
-      .then(() => wd.fillField('#text', 'hello world'))
-      .then(() => wd.seeInField('#text', 'hello world')));
-
-    it('should wait for input text field to be enabled by xpath', () => wd.amOnPage('/form/wait_enabled')
-      .then(() => wd.waitForEnabled("//*[@name = 'test']", 2))
-      .then(() => wd.fillField('#text', 'hello world'))
-      .then(() => wd.seeInField('#text', 'hello world')));
-
-    it('should wait for a button to be enabled', () => wd.amOnPage('/form/wait_enabled')
-      .then(() => wd.waitForEnabled('#text', 2))
-      .then(() => wd.click('#button'))
-      .then(() => wd.see('button was clicked')));
-  });
-
-
   describe('#saveScreenshot', () => {
     beforeEach(() => {
       global.output_dir = path.join(global.codecept_dir, 'output');

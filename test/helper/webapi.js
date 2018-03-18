@@ -1050,4 +1050,21 @@ module.exports.tests = function () {
       });
     });
   });
+
+  describe('#waitForEnabled', () => {
+    it('should wait for input text field to be enabled', () => I.amOnPage('/form/wait_enabled')
+      .then(() => I.waitForEnabled('#text', 2))
+      .then(() => I.fillField('#text', 'hello world'))
+      .then(() => I.seeInField('#text', 'hello world')));
+
+    it('should wait for input text field to be enabled by xpath', () => I.amOnPage('/form/wait_enabled')
+      .then(() => I.waitForEnabled("//*[@name = 'test']", 2))
+      .then(() => I.fillField('#text', 'hello world'))
+      .then(() => I.seeInField('#text', 'hello world')));
+
+    it('should wait for a button to be enabled', () => I.amOnPage('/form/wait_enabled')
+      .then(() => I.waitForEnabled('#text', 2))
+      .then(() => I.click('#button'))
+      .then(() => I.see('button was clicked')));
+  });
 };
