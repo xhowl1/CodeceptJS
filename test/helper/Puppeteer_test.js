@@ -89,33 +89,6 @@ describe('Puppeteer', function () {
     });
   });
 
-  describe('#waitNumberOfVisibleElements', () => {
-    it('should wait for a specified number of elements on the page', () => I.amOnPage('/info')
-      .then(() => I.waitNumberOfVisibleElements('//div[@id = "grab-multiple"]//a', 3))
-      .then(() => I.waitNumberOfVisibleElements('//div[@id = "grab-multiple"]//a', 2, 0.1))
-      .then(() => {
-        throw Error('It should never get this far');
-      })
-      .catch((e) => {
-        e.message.should.include('The number of elements (//div[@id = "grab-multiple"]//a) is not 2 after 0.1 sec');
-      }));
-
-    it('should wait for a specified number of elements on the page using a css selector', () => I.amOnPage('/info')
-      .then(() => I.waitNumberOfVisibleElements('#grab-multiple > a', 3))
-      .then(() => I.waitNumberOfVisibleElements('#grab-multiple > a', 2, 0.1))
-      .then(() => {
-        throw Error('It should never get this far');
-      })
-      .catch((e) => {
-        e.message.should.include('The number of elements (#grab-multiple > a) is not 2 after 0.1 sec');
-      }));
-
-    it('should wait for a specified number of elements which are not yet attached to the DOM', () => I.amOnPage('/form/wait_num_elements')
-      .then(() => I.waitNumberOfVisibleElements('.title', 2, 3))
-      .then(() => I.see('Hello'))
-      .then(() => I.see('World')));
-  });
-
   describe('#moveCursorTo', () => {
     it('should trigger hover event', () => I.amOnPage('/form/hover')
       .then(() => I.moveCursorTo('#hover'))
