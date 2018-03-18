@@ -306,11 +306,4 @@ describe('Protractor-NonAngular', function () {
       }
     });
   });
-
-  /* describe('#waitUntil predicate', () => {
-    it('should wait until the windows requests is equal to 0', () => I.amOnPage('/form/wait_value')
-      .then(() => I.waitUntil(function () {
-        return browser.sleep(10);
-      })));
-  }); */
 });

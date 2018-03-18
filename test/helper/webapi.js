@@ -1140,4 +1140,35 @@ module.exports.tests = function () {
       .then(() => I.see('Hello'))
       .then(() => I.see('World')));
   });
+
+  describe('#waitUntil predicate', () => {
+    it('should throw a custom error', async () => {
+      /* eslint-disable prefer-arrow-callback */
+      try {
+        await I.amOnPage('/form/wait_value');
+        await I.waitUntil(function () {
+          return new Promise(resolve => setTimeout(resolve, 2000));
+        }, 1, 'My custom timeout message');
+        throw Error('It should never get this far');
+      } catch (e) {
+        e.message.should.include('My custom timeout message');
+      }
+      /* eslint-enable prefer-arrow-callback */
+    });
+
+    it('should wait for a custom predicate', async () => {
+      /* eslint-disable prefer-arrow-callback */
+      try {
+        await I.amOnPage('/form/wait_value');
+        await I.waitUntil(function () {
+          return new Promise(resolve => setTimeout(function () {
+            resolve(true);
+          }, 1000));
+        }, 2, 'My custom timeout message');
+      } catch (e) {
+        throw e;
+      }
+      /* eslint-enable prefer-arrow-callback */
+    });
+  });
 };
