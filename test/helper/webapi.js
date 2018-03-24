@@ -9,6 +9,7 @@ const path = require('path');
 const dataFile = path.join(__dirname, '/../data/app/db');
 const formContents = require('../../lib/utils').test.submittedData(dataFile);
 const fileExists = require('../../lib/utils').fileExists;
+const AssertionFailedError = require('../../lib/assert/error');
 
 module.exports.init = function (testData) {
   data = testData;
@@ -21,6 +22,42 @@ module.exports.tests = function () {
     I = data.I;
     siteUrl = data.siteUrl;
     if (fileExists(dataFile)) require('fs').unlinkSync(dataFile);
+  });
+
+  describe('open page : #amOnPage', () => {
+    it('should open main page of configured site', async () => {
+      await I.amOnPage('/');
+      const url = await I.grabCurrentUrl();
+      await url.should.eql(`${siteUrl}/`);
+    });
+    it('should open any page of configured site', async () => {
+      await I.amOnPage('/info');
+      const url = await I.grabCurrentUrl();
+      return url.should.eql(`${siteUrl}/info`);
+    });
+
+    it('should open absolute url', async () => {
+      await I.amOnPage(siteUrl);
+      const url = await I.grabCurrentUrl();
+      return url.should.eql(`${siteUrl}/`);
+    });
+
+    it('should open same page twice without error', async () => {
+      await I.amOnPage('/');
+      await I.amOnPage('/');
+    });
+  });
+
+  describe('refresh page', () => {
+    it('should refresh the current page', async () => {
+      await I.amOnPage(siteUrl);
+      const url = await I.grabCurrentUrl();
+      assert.equal(`${siteUrl}/`, url);
+      await I.refreshPage();
+      const nextUrl = await I.grabCurrentUrl();
+      // reloaded the page, check the url is the same
+      assert.equal(url, nextUrl);
+    });
   });
 
   describe('current url : #seeInCurrentUrl, #seeCurrentUrlEquals, #grabCurrentUrl, ...', () => {
@@ -74,6 +111,42 @@ module.exports.tests = function () {
     });
   });
 
+  describe('window size #resizeWindow', () => {
+    it('should set initial window size', async () => {
+      if (isHelper('Puppeteer')) return;
+
+      await I.amOnPage('/form/resize');
+      await I.click('Window Size');
+      await I.see('Height 700', '#height');
+      await I.see('Width 500', '#width');
+    });
+
+    it('should resize window to specific dimensions', async () => {
+      if (isHelper('Puppeteer')) return;
+
+      await I.amOnPage('/form/resize');
+      await I.resizeWindow(950, 600);
+      await I.click('Window Size');
+      await I.see('Height 600', '#height');
+      await I.see('Width 950', '#width');
+    });
+
+    it('should resize window to maximum screen dimensions', async () => {
+      if (isHelper('Nightmare')) return;
+      if (isHelper('Puppeteer')) return;
+
+      await I.amOnPage('/form/resize');
+      await I.resizeWindow(500, 400);
+      await I.click('Window Size');
+      await I.see('Height 400', '#height');
+      await I.see('Width 500', '#width');
+      await I.resizeWindow('maximize');
+      await I.click('Window Size');
+      await I.dontSee('Height 400', '#height');
+      await I.dontSee('Width 500', '#width');
+    });
+  });
+
   describe('see text : #see', () => {
     it('should check text on site', function* () {
       yield I.amOnPage('/');
@@ -98,6 +171,42 @@ module.exports.tests = function () {
       yield I.see('на');
       yield I.see("Don't do that at home!", 'h3');
       return I.see('Текст', 'p');
+    });
+
+    it('should fail when text is not on site', () => I.amOnPage('/')
+      .then(() => I.see('Something incredible!'))
+      .catch((e) => {
+        e.should.be.instanceOf(AssertionFailedError);
+        e.inspect().should.include('web application');
+      }));
+
+
+    it('should fail when clickable element not found', () => I.amOnPage('/')
+      .then(() => I.click('Welcome'))
+      .catch((e) => {
+        e.should.be.instanceOf(Error);
+        e.message.should.include('Clickable');
+      }));
+
+    it('should fail when text on site', () => I.amOnPage('/')
+      .then(() => I.dontSee('Welcome'))
+      .catch((e) => {
+        e.should.be.instanceOf(AssertionFailedError);
+        e.inspect().should.include('web application');
+      }));
+
+    it('should fail when test is not in context', async () => {
+      try {
+        await I.amOnPage('/');
+        await I.see('debug', {
+          css: 'a',
+        });
+        throw Error('It should not get this far');
+      } catch (e) {
+        e.should.be.instanceOf(AssertionFailedError);
+        e.toString().should.not.include('web application');
+        e.inspect().should.include('expected element {css: "a"}');
+      }
     });
   });
 
@@ -129,6 +238,11 @@ module.exports.tests = function () {
     });
   });
 
+  describe('#seeNumberOfElements', () => {
+    it('should return 1 as count', () => I.amOnPage('/')
+      .then(() => I.seeNumberOfElements('#area1', 1)));
+  });
+
   describe('#seeNumberOfVisibleElements', () => {
     it('should check number of visible elements for given locator', () => I.amOnPage('/info')
       .then(() => I.seeNumberOfVisibleElements('//div[@id = "grab-multiple"]//a', 3)));
@@ -143,6 +257,57 @@ module.exports.tests = function () {
         xpath: '//div[@id = "grab-multiple"]//a',
       }))
       .then(num => assert.equal(num, 3)));
+  });
+
+  describe('#pressKey', () => {
+    it('should be able to send special keys to element', async () => {
+      if (isHelper('Nightmare')) return;
+
+      await I.amOnPage('/form/field');
+      await I.fillField('Name', '-');
+      await I.pressKey(['Control', 'a']);
+      await I.pressKey('Delete');
+      // await I.pressKey('Backspace');
+      await I.pressKey(['Shift', 'a']);
+      await I.pressKey(['Shift', '111']);
+      await I.pressKey('1');
+      const text = await I.grabValueFrom('Name');
+      assert.equal(text, 'A!!!1');
+    });
+
+    it('should be able to enter a single character with modifier key', async () => {
+      if (isHelper('Nightmare')) return;
+
+      await I.amOnPage('/form/field');
+      await I.fillField('Name', 'hello');
+      await I.pressKey(['Shift', 'a']); // Should convert to !
+      const text = await I.grabValueFrom('Name');
+      assert.equal(text, 'helloA');
+    });
+
+    it('should be able to enter a string', async () => {
+      await I.amOnPage('/form/field');
+      await I.fillField('Name', 'hello');
+      await I.pressKey(' world');
+      const text = await I.grabValueFrom('Name');
+      assert.equal(text, 'hello world');
+    });
+
+    it('should be able to enter a single character', async () => {
+      await I.amOnPage('/form/field');
+      await I.fillField('Name', 'hello');
+      await I.pressKey('!');
+      const text = await I.grabValueFrom('Name');
+      assert.equal(text, 'hello!');
+    });
+
+    it('should be able to use backspace key', async () => {
+      await I.amOnPage('/form/field');
+      await I.fillField('Name', 'hello');
+      await I.pressKey('Backspace');
+      const text = await I.grabValueFrom('Name');
+      assert.equal(text, 'hell');
+    });
   });
 
   describe('#seeInSource, #dontSeeInSource, #grabSource', () => {
@@ -231,6 +396,20 @@ module.exports.tests = function () {
       });
       return I.seeCurrentUrlEquals('/');
     });
+  });
+
+  describe('click context', () => {
+    it('should click on inner text', () => I.amOnPage('/form/checkbox')
+      .then(() => I.click('Submit', '//input[@type = "submit"]'))
+      .then(() => I.waitInUrl('/form/complex')));
+
+    it('should click on input in inner element', () => I.amOnPage('/form/checkbox')
+      .then(() => I.click('Submit', '//form'))
+      .then(() => I.waitInUrl('/form/complex')));
+
+    it('should click by accessibility_id', () => I.amOnPage('/info')
+      .then(() => I.click('~index'))
+      .then(() => I.see('Welcome to test app!')));
   });
 
   describe('#doubleClick', () => {
@@ -601,7 +780,7 @@ module.exports.tests = function () {
         .then(() => assert.ok(fileExists(path.join(global.output_dir, `screenshot_full_${+sec}.png`)), null, 'file does not exists'));
     });
 
-    it('should create a screenshot on fail  @ups', () => {
+    it('should create a screenshot on fail @ups', () => {
       const sec = (new Date()).getUTCMilliseconds().toString();
       const test = {
         title: `sw should do smth ${sec}`,
@@ -670,11 +849,22 @@ module.exports.tests = function () {
         .then(() => assert.ok(failed));
     });
 
-
     it('should wait for text after timeout', () => I.amOnPage('/timeout')
       .then(() => I.dontSee('Timeout text'))
       .then(() => I.waitForText('Timeout text', 31, '#text'))
       .then(() => I.see('Timeout text')));
+
+    it('should return error if not present', () => I.amOnPage('/dynamic')
+      .then(() => I.waitForText('Nothing here', 1, '#text'))
+      .catch((e) => {
+        e.message.should.include('Text "Nothing here" was not found on page after 1 sec');
+      }));
+
+    it('should return error if waiting is too small', () => I.amOnPage('/dynamic')
+      .then(() => I.waitForText('Dynamic text', 0.1))
+      .catch((e) => {
+        e.message.should.include('Text "Dynamic text" was not found on page after 0.1 sec');
+      }));
   });
 
   describe('#waitForElement', () => {
@@ -736,13 +926,16 @@ module.exports.tests = function () {
       .then(() => I.see('Step One Button'))
       .then(() => I.seeElement('#step_1'))
       .then(() => I.waitToHide('#step_1', 2))
-      .then(() => I.dontSeeElement('#step_1')));
+      .then(() => I.dontSeeElement('#step_1'))
+      .then(() => I.dontSee('Step One Button')));
 
     it('should wait for element to be invisible by XPath', () => I.amOnPage('/form/wait_invisible')
+      .then(() => I.see('Step One Button'))
       .then(() => I.seeElement('//div[@id="step_1"]'))
       .then(() => I.waitToHide('//div[@id="step_1"]'))
       .then(() => I.dontSeeElement('//div[@id="step_1"]'))
-      .then(() => I.seeElementInDOM('//div[@id="step_1"]')));
+      .then(() => I.seeElementInDOM('//div[@id="step_1"]'))
+      .then(() => I.dontSee('Step One Button')));
 
     it('should wait for element to be removed', () => I.amOnPage('/form/wait_invisible')
       .then(() => I.see('Step Two Button'))
@@ -876,6 +1069,98 @@ module.exports.tests = function () {
       .catch((err) => {
         if (!err) assert.fail('seen "Iframe test"');
       }));
+  });
+
+  describe('#switchTo frame', () => {
+    it('should switch to frame using name', async () => {
+      if (isHelper('Nightmare')) return;
+      await I.amOnPage('/iframe');
+      await I.see('Iframe test', 'h1');
+      await I.dontSee('Information', 'h1');
+      await I.switchTo('iframe');
+      await I.see('Information', 'h1');
+      await I.dontSee('Iframe test', 'h1');
+    });
+
+    it('should switch to root frame', async () => {
+      if (isHelper('Nightmare')) return;
+      await I.amOnPage('/iframe');
+      await I.see('Iframe test', 'h1');
+      await I.dontSee('Information', 'h1');
+      await I.switchTo('iframe');
+      await I.see('Information', 'h1');
+      await I.dontSee('Iframe test', 'h1');
+      await I.switchTo();
+      await I.see('Iframe test', 'h1');
+    });
+
+    it('should switch to frame using frame number', async () => {
+      if (isHelper('Nightmare')) return;
+
+      await I.amOnPage('/iframe');
+      await I.see('Iframe test', 'h1');
+      await I.dontSee('Information', 'h1');
+      await I.switchTo(0);
+      await I.see('Information', 'h1');
+      await I.dontSee('Iframe test', 'h1');
+    });
+  });
+
+  describe('#switchTo ', () => {
+    it('should switch reference to iframe content', async () => {
+      if (isHelper('Nightmare')) return;
+
+      await I.amOnPage('/iframe');
+      await I.switchTo('[name="content"]');
+      await I.see('Information\nLots of valuable data here');
+    });
+
+    it('should return error if iframe selector is invalid', async () => {
+      if (isHelper('Nightmare')) return;
+
+      try {
+        await I.amOnPage('/iframe');
+        await I.switchTo('#invalidIframeSelector');
+        throw Error('Should not get this far');
+      } catch (e) {
+        e.should.be.instanceOf(Error);
+        e.message.should.be.equal('Element #invalidIframeSelector was not found by text|CSS|XPath');
+      }
+    });
+
+    it('should return error if iframe selector is not iframe', async () => {
+      if (isHelper('Nightmare')) return;
+
+      try {
+        await I.amOnPage('/iframe');
+        await I.switchTo('h1');
+        throw Error('Should not get this far');
+      } catch (e) {
+        e.should.be.instanceOf(Error);
+        e.message.should.include('No such frame');
+        // e.seleniumStack.type.should.be.equal('NoSuchFrame');
+      }
+    });
+
+    it('should return to parent frame given a null locator', async () => {
+      if (isHelper('Nightmare')) return;
+
+      await I.amOnPage('/iframe');
+      await I.switchTo('[name="content"]');
+      await I.see('Information\nLots of valuable data here');
+      await I.switchTo(null);
+      await I.see('Iframe test');
+    });
+  });
+
+  describe('#moveCursorTo', () => {
+    it('should trigger hover event', () => I.amOnPage('/form/hover')
+      .then(() => I.moveCursorTo('#hover'))
+      .then(() => I.see('Hovered', '#show')));
+
+    it('should not trigger hover event because of the offset is beyond the element', () => I.amOnPage('/form/hover')
+      .then(() => I.moveCursorTo('#hover', 100, 100))
+      .then(() => I.dontSee('Hovered', '#show')));
   });
 
   describe('scroll: #scrollTo, #scrollPageToTop, #scrollPageToBottom', () => {
@@ -1169,6 +1454,78 @@ module.exports.tests = function () {
         throw e;
       }
       /* eslint-enable prefer-arrow-callback */
+    });
+  });
+
+  describe('popup : #acceptPopup, #seeInPopup, #cancelPopup', () => {
+    it('should accept popup window', async () => {
+      if (isHelper('Nightmare')) return;
+
+      await I.amOnPage('/form/popup');
+      await I.click('Confirm');
+      await I.acceptPopup();
+      await I.see('Yes', '#result');
+    });
+
+    it('should cancel popup', async () => {
+      if (isHelper('Nightmare')) return;
+
+      await I.amOnPage('/form/popup');
+      if (isHelper('Puppeteer')) {
+        await I.amCancellingPopups();
+      }
+      await I.click('Confirm');
+      await I.cancelPopup();
+      await I.see('No', '#result');
+    });
+
+    it('should check text in popup', async () => {
+      if (isHelper('Nightmare')) return;
+
+      await I.amOnPage('/form/popup');
+      await I.click('Alert');
+      await I.seeInPopup('Really?');
+      await I.acceptPopup();
+    });
+
+    it('should grab text from popup', async () => {
+      if (isHelper('Nightmare')) return;
+
+      await I.amOnPage('/form/popup');
+      await I.click('Alert');
+      const text = await I.grabPopupText();
+      assert.equal(text, 'Really?');
+      await I.acceptPopup();
+    });
+
+    it('should return null if no popup is visible (do not throw an error)', async () => {
+      if (isHelper('Nightmare')) return;
+
+      await I.amOnPage('/form/popup');
+      const text = await I.grabPopupText();
+      assert.equal(text, null);
+    });
+  });
+
+  describe('#dragAndDrop', () => {
+    it('Drag item from source to target (no iframe) @dragNdrop', async () => {
+      if (isHelper('Nightmare')) return;
+
+      await I.amOnPage('http://jqueryui.com/resources/demos/droppable/default.html');
+      await I.seeElementInDOM('#draggable');
+      await I.dragAndDrop('#draggable', '#droppable');
+      await I.see('Dropped');
+    });
+
+    it('Drag and drop from within an iframe', async () => {
+      if (isHelper('Nightmare')) return;
+
+      await I.amOnPage('http://jqueryui.com/droppable');
+      await I.resizeWindow(700, 700);
+      await I.switchTo('//iframe[@class="demo-frame"]');
+      await I.seeElementInDOM('#draggable');
+      await I.dragAndDrop('#draggable', '#droppable');
+      await I.see('Dropped');
     });
   });
 };

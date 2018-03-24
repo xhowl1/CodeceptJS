@@ -8,7 +8,6 @@ const assert = require('assert');
 const path = require('path');
 const fs = require('fs');
 const fileExists = require('../../lib/utils').fileExists;
-const AssertionFailedError = require('../../lib/assert/error');
 const webApiTests = require('./webapi');
 
 describe('WebDriverIO', function () {
@@ -33,7 +32,7 @@ describe('WebDriverIO', function () {
       waitForTimeout: 5000,
       desiredCapabilities: {
         chromeOptions: {
-          args: ['--headless', '--disable-gpu', '--window-size=1280,1024'],
+          args: ['--window-size=1280,1024'],
         },
       },
     });
@@ -48,128 +47,6 @@ describe('WebDriverIO', function () {
 
   // load common test suite
   webApiTests.tests();
-
-  describe('open page : #amOnPage', () => {
-    it('should open main page of configured site', () => wd.amOnPage('/').getUrl().then(url => url.should.eql(`${siteUrl}/`)));
-
-    it('should open any page of configured site', () => wd.amOnPage('/info').getUrl().then(url => url.should.eql(`${siteUrl}/info`)));
-
-    it('should open absolute url', () => wd.amOnPage(siteUrl).getUrl().then(url => url.should.eql(`${siteUrl}/`)));
-  });
-
-  describe('see text : #see', () => {
-    it('should fail when text is not on site', () => wd.amOnPage('/')
-      .then(() => wd.see('Something incredible!'))
-      .catch((e) => {
-        e.should.be.instanceOf(AssertionFailedError);
-        e.inspect().should.include('web page');
-      })
-      .then(() => wd.dontSee('Welcome'))
-      .catch((e) => {
-        e.should.be.instanceOf(AssertionFailedError);
-        e.inspect().should.include('web page');
-      }));
-  });
-
-  describe('check fields: #seeInField, #seeCheckboxIsChecked, ...', () => {
-    it('should throw error if field is not empty', () => wd.amOnPage('/form/empty')
-      .then(() => wd.seeInField('#empty_input', 'Ayayay'))
-      .catch((e) => {
-        e.should.be.instanceOf(AssertionFailedError);
-        e.inspect().should.be.equal('expected fields by #empty_input to include "Ayayay"');
-      }));
-
-    it('should check values in checkboxes', function* () {
-      yield wd.amOnPage('/form/field_values');
-      yield wd.dontSeeInField('checkbox[]', 'not seen one');
-      yield wd.seeInField('checkbox[]', 'see test one');
-      yield wd.dontSeeInField('checkbox[]', 'not seen two');
-      yield wd.seeInField('checkbox[]', 'see test two');
-      yield wd.dontSeeInField('checkbox[]', 'not seen three');
-      return wd.seeInField('checkbox[]', 'see test three');
-    });
-
-    it('should check values with boolean', function* () {
-      yield wd.amOnPage('/form/field_values');
-      yield wd.seeInField('checkbox1', true);
-      yield wd.dontSeeInField('checkbox1', false);
-      yield wd.seeInField('checkbox2', false);
-      yield wd.dontSeeInField('checkbox2', true);
-      yield wd.seeInField('radio2', true);
-      yield wd.dontSeeInField('radio2', false);
-      yield wd.seeInField('radio3', false);
-      return wd.dontSeeInField('radio3', true);
-    });
-
-    it('should check values in radio', function* () {
-      yield wd.amOnPage('/form/field_values');
-      yield wd.seeInField('radio1', 'see test one');
-      yield wd.dontSeeInField('radio1', 'not seen one');
-      yield wd.dontSeeInField('radio1', 'not seen two');
-      return wd.dontSeeInField('radio1', 'not seen three');
-    });
-
-    it('should check values in select', function* () {
-      yield wd.amOnPage('/form/field_values');
-      yield wd.seeInField('select1', 'see test one');
-      yield wd.dontSeeInField('select1', 'not seen one');
-      yield wd.dontSeeInField('select1', 'not seen two');
-      return wd.dontSeeInField('select1', 'not seen three');
-    });
-
-    it('should check for empty select field', function* () {
-      yield wd.amOnPage('/form/field_values');
-      return wd.seeInField('select3', '');
-    });
-
-    it('should check for select multiple field', function* () {
-      yield wd.amOnPage('/form/field_values');
-      yield wd.dontSeeInField('select2', 'not seen one');
-      yield wd.seeInField('select2', 'see test one');
-      yield wd.dontSeeInField('select2', 'not seen two');
-      yield wd.seeInField('select2', 'see test two');
-      yield wd.dontSeeInField('select2', 'not seen three');
-      return wd.seeInField('select2', 'see test three');
-    });
-  });
-
-  describe('#pressKey', () => {
-    it('should be able to send special keys to element', function* () {
-      yield wd.amOnPage('/form/field');
-      yield wd.appendField('Name', '-');
-      yield wd.pressKey(['Control', 'a']);
-      yield wd.pressKey('Delete');
-      yield wd.pressKey(['Shift', '111']);
-      yield wd.pressKey('1');
-      return wd.seeInField('Name', '!!!1');
-    });
-  });
-
-  describe('#saveScreenshot', () => {
-    beforeEach(() => {
-      global.output_dir = path.join(global.codecept_dir, 'output');
-    });
-
-    it('should create a screenshot on fail  @ups', () => {
-      const sec = (new Date()).getUTCMilliseconds().toString();
-      const test = {
-        title: `sw should do smth ${sec}`,
-      };
-      return wd.amOnPage('/')
-        .then(() => wd._failed(test))
-        .then(() => assert.ok(fileExists(path.join(output_dir, `sw_should_do_smth_${sec}.failed.png`)), null, 'file does not exists'));
-    });
-  });
-
-  describe('#moveCursorTo', () => {
-    it('should trigger hover event', () => wd.amOnPage('/form/hover')
-      .then(() => wd.moveCursorTo('#hover'))
-      .then(() => wd.see('Hovered', '#show')));
-
-    it('should not trigger hover event because of the offset is beyond the element', () => wd.amOnPage('/form/hover')
-      .then(() => wd.moveCursorTo('#hover', 100, 100))
-      .then(() => wd.dontSee('Hovered', '#show')));
-  });
 
   describe('#switchToNextTab, #switchToPreviousTab, #openNewTab, #closeCurrentTab, #closeOtherTabs, #grabNumberOfOpenTabs', () => {
     it('should only have 1 tab open when the browser starts and navigates to the first page', () => wd.amOnPage('/')
@@ -239,113 +116,6 @@ describe('WebDriverIO', function () {
       }));
   });
 
-  describe('popup : #acceptPopup, #seeInPopup, #cancelPopup', () => {
-    it('should accept popup window', () => wd.amOnPage('/form/popup')
-      .then(() => wd.click('Confirm'))
-      .then(() => wd.acceptPopup())
-      .then(() => wd.see('Yes', '#result')));
-
-    it('should cancel popup', () => wd.amOnPage('/form/popup')
-      .then(() => wd.click('Confirm'))
-      .then(() => wd.cancelPopup())
-      .then(() => wd.see('No', '#result')));
-
-    it('should check text in popup', () => wd.amOnPage('/form/popup')
-      .then(() => wd.click('Alert'))
-      .then(() => wd.seeInPopup('Really?'))
-      .then(() => wd.cancelPopup()));
-
-    it('should grab text from popup', () => wd.amOnPage('/form/popup')
-      .then(() => wd.click('Alert'))
-      .then(() => wd.grabPopupText())
-      .then(text => assert.equal(text, 'Really?')));
-
-    it('should return null if no popup is visible (do not throw an error)', () => wd.amOnPage('/form/popup')
-      .then(() => wd.grabPopupText())
-      .then(text => assert.equal(text, null)));
-  });
-
-  describe('#waitForText', () => {
-    it('should return error if not present', () => wd.amOnPage('/dynamic')
-      .then(() => wd.waitForText('Nothing here', 1, '#text'))
-      .catch((e) => {
-        e.message.should.be.equal('element (#text) is not in DOM or there is no element(#text) with text "Nothing here" after 1 sec');
-      }));
-
-    it('should return error if waiting is too small', () => wd.amOnPage('/dynamic')
-      .then(() => wd.waitForText('Dynamic text', 0.1))
-      .catch((e) => {
-        e.message.should.be.equal('element (body) is not in DOM or there is no element(body) with text "Dynamic text" after 0.1 sec');
-      }));
-  });
-
-  describe('#seeNumberOfElements', () => {
-    it('should return 1 as count', () => wd.amOnPage('/')
-      .then(() => wd.seeNumberOfElements('#area1', 1)));
-  });
-
-  describe('#switchTo', () => {
-    it('should switch reference to iframe content', () => wd.amOnPage('/iframe')
-      .then(() => wd.switchTo('[name="content"]'))
-      .then(() => wd.see('Information\nLots of valuable data here')));
-
-    it('should return error if iframe selector is invalid', () => wd.amOnPage('/iframe')
-      .then(() => wd.switchTo('#invalidIframeSelector'))
-      .catch((e) => {
-        e.should.be.instanceOf(Error);
-        e.message.should.be.equal('Element #invalidIframeSelector was not found by text|CSS|XPath');
-      }));
-
-    it('should return error if iframe selector is not iframe', () => wd.amOnPage('/iframe')
-      .then(() => wd.switchTo('h1'))
-      .catch((e) => {
-        e.should.be.instanceOf(Error);
-        e.seleniumStack.type.should.be.equal('NoSuchFrame');
-      }));
-
-    it('should return to parent frame given a null locator', () => wd.amOnPage('/iframe')
-      .then(() => wd.switchTo('[name="content"]'))
-      .then(() => wd.see('Information\nLots of valuable data here'))
-      .then(() => wd.switchTo(null))
-      .then(() => wd.see('Iframe test')));
-  });
-
-  describe('click context', () => {
-    it('should click on inner text', () => wd.amOnPage('/form/checkbox')
-      .then(() => wd.click('Submit', '//input[@type = "submit"]'))
-      .then(() => wd.waitInUrl('/form/complex')));
-    it('should click on input in inner element', () => wd.amOnPage('/form/checkbox')
-      .then(() => wd.click('Submit', '//form'))
-      .then(() => wd.waitInUrl('/form/complex')));
-
-    it('should click by accessibility_id', () => wd.amOnPage('/info')
-      .then(() => wd.click('~index'))
-      .then(() => wd.see('Welcome to test app!')));
-  });
-
-  describe('window size #resizeWindow', () => {
-    it('should set initial window size', () => wd.amOnPage('/form/resize')
-      .then(() => wd.click('Window Size'))
-      .then(() => wd.see('Height 700', '#height'))
-      .then(() => wd.see('Width 500', '#width')));
-
-    it('should resize window to specific dimensions', () => wd.amOnPage('/form/resize')
-      .then(() => wd.resizeWindow(950, 600))
-      .then(() => wd.click('Window Size'))
-      .then(() => wd.see('Height 600', '#height'))
-      .then(() => wd.see('Width 950', '#width')));
-
-    it('should resize window to maximum screen dimensions', () => wd.amOnPage('/form/resize')
-      .then(() => wd.resizeWindow(500, 400))
-      .then(() => wd.click('Window Size'))
-      .then(() => wd.see('Height 400', '#height'))
-      .then(() => wd.see('Width 500', '#width'))
-      .then(() => wd.resizeWindow('maximize'))
-      .then(() => wd.click('Window Size'))
-      .then(() => wd.dontSee('Height 400', '#height'))
-      .then(() => wd.dontSee('Width 500', '#width')));
-  });
-
   describe('SmartWait', () => {
     before(() => wd.options.smartWait = 3000);
     after(() => wd.options.smartWait = 0);
@@ -385,7 +155,6 @@ describe('WebDriverIO', function () {
       .then(() => wd._locateClickable('I disagree'))
       .then(res => res.length.should.be.equal(0)));
   });
-
 
   describe('#_locateCheckable', () => {
     it('should locate a checkbox', () => wd.amOnPage('/form/checkbox')
@@ -432,44 +201,5 @@ describe('WebDriverIO', function () {
         const matchingLogs = logs.filter(log => log.message.indexOf('Test log entry') > -1);
         assert.equal(matchingLogs.length, 2);
       }));
-  });
-
-  describe('#dragAndDrop', () => {
-    it('Drag item from source to target (no iframe) @dragNdrop', () => wd.amOnPage('http://jqueryui.com/resources/demos/droppable/default.html')
-      .then(() => wd.seeElementInDOM('#draggable'))
-      .then(() => wd.dragAndDrop('#draggable', '#droppable'))
-      .then(() => wd.see('Dropped')));
-
-    it('Drag and drop from within an iframe', () => wd.amOnPage('http://jqueryui.com/droppable')
-      .then(() => wd.resizeWindow(700, 700))
-      .then(() => wd.switchTo('//iframe[@class="demo-frame"]'))
-      .then(() => wd.seeElementInDOM('#draggable'))
-      .then(() => wd.dragAndDrop('#draggable', '#droppable'))
-      .then(() => wd.see('Dropped')));
-  });
-
-  describe('#switchTo frame', () => {
-    it('should switch to frame using name', () => wd.amOnPage('/iframe')
-      .then(() => wd.see('Iframe test', 'h1'))
-      .then(() => wd.dontSee('Information', 'h1'))
-      .then(() => wd.switchTo('iframe'))
-      .then(() => wd.see('Information', 'h1'))
-      .then(() => wd.dontSee('Iframe test', 'h1')));
-
-    it('should switch to root frame', () => wd.amOnPage('/iframe')
-      .then(() => wd.see('Iframe test', 'h1'))
-      .then(() => wd.dontSee('Information', 'h1'))
-      .then(() => wd.switchTo('iframe'))
-      .then(() => wd.see('Information', 'h1'))
-      .then(() => wd.dontSee('Iframe test', 'h1'))
-      .then(() => wd.switchTo())
-      .then(() => wd.see('Iframe test', 'h1')));
-
-    it('should switch to frame using frame number', () => wd.amOnPage('/iframe')
-      .then(() => wd.see('Iframe test', 'h1'))
-      .then(() => wd.dontSee('Information', 'h1'))
-      .then(() => wd.switchTo(0))
-      .then(() => wd.see('Information', 'h1'))
-      .then(() => wd.dontSee('Iframe test', 'h1')));
   });
 });
